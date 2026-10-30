@@ -90,6 +90,21 @@ body.playing:not(.show-controls) { cursor: none; }
   box-shadow: 0 1vh 4vh rgba(0,0,0,0.4);
 }
 .lbl-count { left: 50% !important; top: 42% !important; font-size: 22vh; -webkit-text-stroke: 1vh #120a1e; paint-order: stroke fill; color: var(--c, #ffd23f); }
+.elim { position: absolute; left: 50%; text-align: center; pointer-events: none; z-index: 4; white-space: nowrap; }
+.elim-name {
+  position: relative; display: inline-block; font-family: var(--display); font-size: 6vh; letter-spacing: 0.04em; color: #fff;
+  padding: 0.6vh 2.2vw; border-radius: 1vh; background: rgba(10, 8, 20, 0.82); border-left: 1.2vh solid var(--c, #fff);
+  box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.45); transition: color 0.3s, background 0.3s;
+}
+.elim-name i {
+  position: absolute; left: 1.2vw; right: 1.2vw; top: 50%; height: 0.9vh; margin-top: -0.45vh; border-radius: 0.5vh;
+  background: #ff1f3d; box-shadow: 0 0 1.5vh rgba(255, 31, 61, 0.8); transform: scaleX(0); transform-origin: left;
+}
+.elim.struck .elim-name { color: rgba(255, 255, 255, 0.55); background: rgba(60, 8, 18, 0.85); }
+.elim-tag {
+  display: block; width: max-content; margin: 0 auto 0.6vh; font-family: var(--display); font-size: 2.4vh; letter-spacing: 0.25em; color: #fff;
+  background: #ff1f3d; padding: 0.3vh 1vw; border-radius: 0.5vh; opacity: 0;
+}
 .ov-banner {
   position: absolute; left: 50%; top: 13vh; transform: translate(-50%, 0) scaleX(0); opacity: 0; z-index: 5;
   font-family: var(--display); font-size: 6vh; letter-spacing: 0.2em; color: #fff; padding: 1.2vh 4vw;

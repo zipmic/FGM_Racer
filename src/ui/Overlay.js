@@ -13,12 +13,14 @@ export class Overlay {
       <div class="ov-letter top"></div><div class="ov-letter bottom"></div>
       <canvas class="ov-speed"></canvas>
       <div class="ov-labels"></div>
+      <div class="ov-elims"></div>
       <div class="ov-banner"><span></span></div>
       <div class="ov-winner"><div class="w1">WINNER!</div><div class="w2"></div></div>
       <div class="ov-end"></div>
       <div class="ov-flash"></div>
       <div class="ov-fade"></div>`;
     this.labels = this.root.querySelector('.ov-labels');
+    this.elimsEl = this.root.querySelector('.ov-elims');
     this.banner = this.root.querySelector('.ov-banner');
     this.bannerText = this.banner.querySelector('span');
     this.winner = this.root.querySelector('.ov-winner');
@@ -47,6 +49,19 @@ export class Overlay {
       d.style.display = 'none';
       this.labels.appendChild(d);
       this.pool.set(k, d);
+    });
+    // elimination cards: theme name that gets struck out; overlapping ones stack upwards
+    this.elimsEl.innerHTML = '';
+    this.elims = plan.allEvents.filter((e) => e.type === 'elim').map((e, k, all) => {
+      const d = document.createElement('div');
+      d.className = 'elim';
+      d.style.setProperty('--c', e.color);
+      d.innerHTML = '<div class="elim-tag">ELIMINATED</div><div class="elim-name"><span></span><i></i></div>';
+      d.querySelector('span').textContent = e.text;
+      d.style.display = 'none';
+      this.elimsEl.appendChild(d);
+      const slot = all.slice(0, k).filter((o) => o.t + o.dur > e.t).length;
+      return { e, d, slot, strike: d.querySelector('i'), tag: d.querySelector('.elim-tag') };
     });
     this.banners = plan.allEvents.filter((e) => e.type === 'banner');
     this.flashes = plan.allEvents.filter((e) => e.type === 'flash');
@@ -93,6 +108,20 @@ export class Overlay {
         d.style.transform = `translate(-50%, -100%) scale(${pop}) rotate(${e.style === 'pop' ? -4 : 0}deg)`;
       }
     });
+    // elimination cards
+    for (const c of this.elims) {
+      const a = t - c.e.t;
+      if (a < 0 || a > c.e.dur) { if (c.d.style.display !== 'none') c.d.style.display = 'none'; continue; }
+      c.d.style.display = 'block';
+      const inK = easeOutBack(clamp(a / 0.3));
+      const out = 1 - smooth((a - (c.e.dur - 0.35)) / 0.35);
+      c.d.style.opacity = String(Math.min(1, a / 0.12) * out);
+      c.d.style.bottom = `${15 + c.slot * 13}vh`;
+      c.d.style.transform = `translateX(-50%) scale(${0.6 + 0.4 * inK})`;
+      c.strike.style.transform = `scaleX(${smooth((a - 0.45) / 0.4)})`;
+      c.tag.style.opacity = String(smooth((a - 0.75) / 0.25));
+      c.d.classList.toggle('struck', a > 0.85);
+    }
     // banners
     let ban = null;
     for (const b of this.banners) if (t >= b.t && t < b.t + b.dur) ban = b;

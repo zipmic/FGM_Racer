@@ -217,23 +217,27 @@ export class RaceDirector {
     for (const bk of p.crashBlocks) {
       const ctx = this.ctx[bk.i];
       const r = p.racers[bk.i];
+      // the authored shots cover the crash itself; the linger after it gets a calm look at the wreck
+      // (a chain reaction keeps its wide two-racer shot instead)
+      const tEnd = bk.follower !== undefined ? bk.t1 : bk.t1 - bk.linger;
       let list = (r.crash.def.shots?.(ctx) || []).map((s) => ({ ...s }));
       if (bk.follower !== undefined) {
         // one wide shot keeps both racers of a chain reaction in frame
         const keep = list.filter((s) => s.t1 <= r.crash.t + 0.05);
-        list = [...keep, { t0: r.crash.t - 0.05, t1: bk.t1, kind: 'baseCam', racer: bk.i, racer2: bk.follower, cam: [[34, 22, 7], [36, 24, 9]], look: 'pair', fov: 52 }];
+        list = [...keep, { t0: r.crash.t - 0.05, t1: tEnd, kind: 'baseCam', racer: bk.i, racer2: bk.follower, cam: [[34, 22, 7], [36, 24, 9]], look: 'pair', fov: 52 }];
       }
-      list = list.filter((s) => s.t1 > bk.t0 + 0.05 && s.t0 < bk.t1 - 0.05);
+      list = list.filter((s) => s.t1 > bk.t0 + 0.05 && s.t0 < tEnd - 0.05);
       list.sort((a, b) => a.t0 - b.t0);
-      if (!list.length) list = [{ t0: bk.t0, t1: bk.t1, kind: 'follow', racer: bk.i, offset: [[-9, 4, 3.5]], look: [0, 0, 1.5], fov: 48 }];
+      if (!list.length) list = [{ t0: bk.t0, t1: tEnd, kind: 'follow', racer: bk.i, offset: [[-9, 4, 3.5]], look: [0, 0, 1.5], fov: 48 }];
       list[0].t0 = bk.t0;
-      list[list.length - 1].t1 = bk.t1;
+      list[list.length - 1].t1 = tEnd;
       for (let k = 0; k < list.length; k++) {
         list[k].t0 = Math.max(list[k].t0, bk.t0);
-        list[k].t1 = Math.min(list[k].t1, bk.t1);
+        list[k].t1 = Math.min(list[k].t1, tEnd);
         if (k > 0) list[k].t0 = list[k - 1].t1;
       }
       out.push(...list.filter((s) => s.t1 > s.t0 + 0.02));
+      if (tEnd < bk.t1) out.push({ t0: tEnd, t1: bk.t1, kind: 'wreck', racer: bk.i, fov: 44 });
     }
     // fillers
     const F0 = p.F0;
