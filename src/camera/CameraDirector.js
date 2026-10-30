@@ -132,6 +132,17 @@ export class CameraDirector {
         if (s.lookOffset) look.add(V(s.lookOffset));
         break;
       }
+      case 'wreck': {
+        // calm aftermath: high and ahead of where the wreck came to rest, looking back at it, slowly pushing in
+        const b = this.D.crashBase(s.racer);
+        s.p0 ||= this.D.rootAt(s.racer, tm.tau(s.t0) - p.racers[s.racer].crash.tau).pos.clone();
+        const d = lerp(12, 10, ue);
+        pos.copy(s.p0).addScaledVector(b.f, d).addScaledVector(b.r, -0.25 * d);
+        pos.y = Math.max(s.p0.y, b.pos.y, this.D.terrain.groundAt(pos.x, pos.z)) + 7.5;
+        look.copy(this._racer(s.racer, tau).pos);
+        look.y += 1.2;
+        break;
+      }
       case 'trackcam': {
         const q = this.D.poseAt(s.racer, tm.tau(s.at), (this._pose2.tc ||= {}));
         const fr = { p: q.pos, f: q.trackTan || q.f, r: q.trackRight || q.r, u: new THREE.Vector3(0, 1, 0) };

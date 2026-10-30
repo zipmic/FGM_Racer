@@ -23,6 +23,8 @@ const BUDGET = {
 };
 // pairs that happen together in one shot (follower starts `offset` s after leader)
 const CHAINS = { buggy: { stilts: 0.5 }, buttons: { robot: 0.55 } };
+// extra film seconds the camera stays on each wreck (with the struck-out theme card) before moving on
+const LINGER = 2.2, LINGER5 = 1.2;
 
 export function buildPlan(themes, world) {
   const track = world.track;
@@ -95,7 +97,10 @@ export function buildPlan(themes, world) {
     } else {
       schedule.push(r);
     }
-    t = end;
+    // no pause before the 8-bit racer: it has to hit the car that just stopped in front of it
+    const next = chaos[k + 1];
+    r.crash.linger = next && crashFor(next.type).ram ? 0 : LINGER;
+    t = end + r.crash.linger;
   }
   const F0 = chaos.length ? t + 0.05 : 12;
   plan.F0 = F0;
@@ -104,8 +109,8 @@ export function buildPlan(themes, world) {
   final5.forEach((r, k) => {
     const [pre, hold] = BUDGET[r.type] || BUDGET.kart;
     const onset = ft + pre;
-    r.crash = { type: r.type, def: crashFor(r.type), t: onset };
-    ft = onset + hold + (k < F - 1 ? 0.3 : 0);
+    r.crash = { type: r.type, def: crashFor(r.type), t: onset, linger: LINGER5 };
+    ft = onset + hold + LINGER5 + (k < F - 1 ? 0.3 : 0);
   });
   const D = Math.max(ft + 0.95, F0 + 3);
   plan.D = D;
@@ -514,9 +519,15 @@ function buildPresentation(plan) {
       const f = racers[r.crash.chainFollower];
       hold2 = Math.max(hold, f.crash.t - r.crash.t + (BUDGET[f.type] || BUDGET.kart)[1]);
     }
-    blocks.push({ i: r.i, t0: r.crash.t - pre, t1: r.crash.t + hold2, follower: r.crash.chainFollower });
+    blocks.push({ i: r.i, t0: r.crash.t - pre, t1: r.crash.t + hold2 + (r.crash.linger || 0), linger: r.crash.linger || 0, follower: r.crash.chainFollower });
   }
   plan.crashBlocks = blocks;
+  // theme card that gets struck out for every eliminated racer, shown until the camera moves on
+  for (const r of crashers) {
+    const bk = blocks.find((b) => b.i === r.i || b.follower === r.i);
+    const t0 = r.crash.t + 0.35;
+    ev.push({ t: t0, type: 'elim', text: r.name.toUpperCase(), color: r.color, dur: Math.max(2.2, bk.t1 - t0) });
+  }
 
   // fillers: chaos & final five
   const fillers = [];
