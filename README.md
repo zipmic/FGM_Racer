@@ -21,11 +21,18 @@ npm run build
 npm run preview
 ```
 
+`npm run build` also writes `dist/theme-grand-prix.html`: one self-contained file with all code and
+styles inlined. Double-click it to run the show straight from disk, no server or internet needed.
+
 ### GitHub Pages
 
 `.github/workflows/deploy.yml` builds and publishes the site on every push to `main`.
-One-time setup in the repository: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+One-time setup in the repository: **Settings → Pages → Build and deployment → Source: GitHub Actions**
+(until this is done the *deploy* job fails with "Not Found"; the *build* job still succeeds).
 The site then appears at `https://<user>.github.io/<repo>/` (the build uses relative paths, so any repo name works).
+
+Every run (also manual runs on other branches via **Actions → Run workflow**) attaches an artifact
+`theme-grand-prix` at the bottom of the run page: download, unzip, double-click `theme-grand-prix.html`.
 
 ## Using it
 
