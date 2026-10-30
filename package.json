@@ -1,0 +1,18 @@
+{
+  "name": "fgm-jam-2026-theme-reveal",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Future Game Makers Jam 2026 #2 – cinematic Three.js theme reveal race",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}
