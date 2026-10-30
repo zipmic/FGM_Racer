@@ -6,7 +6,7 @@
   "description": "Future Game Makers Jam 2026 #2 – cinematic Three.js theme reveal race",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/standalone.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
