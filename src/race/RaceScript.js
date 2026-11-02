@@ -11,7 +11,9 @@ import { crashFor } from './crashes.js';
  * progress/lane curves, finale tables, camera shot list and timeline events.
  */
 
-export const GO = 7.9;
+export const GO = 10.3;
+// first chaos shot starts once the pack has blasted past the low start camera
+const CHAOS0 = GO + 1.55;
 const LANES = [-6, 3, -2, 8, -9, 6, 0, -4, 10, -10, 4, -7, 9, -1, 7, -5, 2, -8, 5, -3, 1, -11, 11, -6];
 
 // film-time budget per crash type: seconds of build-up before onset and seconds held after it
@@ -76,7 +78,7 @@ export function buildPlan(themes, world) {
   plan.gridOrder = gridOrder.map((r) => r.i);
 
   // ------------------------------------------------------------ elimination schedule (film time)
-  let t = 9.45;
+  let t = CHAOS0;
   const schedule = [];
   for (let k = 0; k < chaos.length; k++) {
     const r = chaos[k];
@@ -464,26 +466,26 @@ function buildPresentation(plan) {
   // ------------------------------------------------------------ opening
   plan.countdown = { lights: [GO - 1.65, GO - 1.1, GO - 0.55], go: GO };
   shots.push({
-    t0: 0, t1: 2.9, kind: 'path', fog: 0.0006,
+    t0: 0, t1: 2.4, kind: 'path', fog: 0.0006,
     points: [[760, 320, -720], [430, 190, -300], [140, 70, 70], [25, 24, 64]],
     looks: [[-200, 0, -170], [-80, 0, -60], [-25, 0, 0], [-32, 2, 0]],
   });
-  label(0.5, 'FUTURE GAME MAKERS JAM 2026 #2', { style: 'title', dur: 2.4 });
+  label(0.4, 'FUTURE GAME MAKERS JAM 2026 #2', { style: 'title', dur: 2.0 });
   const glimpse = [];
-  glimpse.push({ r: R, off: [[9, -5.5, 0.6], [7.5, -4.6, 0.8]], look: [0, 0, 2.2], dur: 0.9, sfx: 'revBig' });
+  glimpse.push({ r: R, off: [[9, -5.5, 0.6], [7.5, -4.6, 0.8]], look: [0, 0, 2.2], dur: 1.5, sfx: 'revBig' });
   for (const [type, off, look, s] of [
     ['monster', [[8, -5, 3], [7, -4, 3.6]], [0, 0, 5.2], 'roarSmall'],
     ['rocket', [[-2.5, -8, 1.8], [-1.2, -7, 1.6]], [-0.8, 0, 1.4], 'rocketIdle'],
     ['dungeon', [[8.5, -3.6, 3.2], [7.2, -3.0, 3.2]], [1.2, 0, 2.4], 'chomp'],
   ]) {
     const r = byType(type);
-    if (r) glimpse.push({ r: r.i, off, look, dur: 0.58, sfx: s });
+    if (r) glimpse.push({ r: r.i, off, look, dur: 1.3, sfx: s });
   }
-  let gt = 2.9;
+  let gt = 2.4;
   while (glimpse.length < 4) {
     const r = racers.find((x) => x.i !== W && !glimpse.some((g) => g.r === x.i));
     if (!r) break;
-    glimpse.push({ r: r.i, off: [[6, -4, 2], [5, -3.5, 2.2]], look: [0, 0, 1.5], dur: 0.6 });
+    glimpse.push({ r: r.i, off: [[6, -4, 2], [5, -3.5, 2.2]], look: [0, 0, 1.5], dur: 1.3 });
   }
   for (const g of glimpse) {
     shots.push({ t0: gt, t1: gt + g.dur, kind: 'follow', racer: g.r, offset: g.off, look: g.look, fov: 40 });
@@ -491,8 +493,8 @@ function buildPresentation(plan) {
     if (g.sfx) sfx(gt + 0.05, g.sfx, 0.9);
     gt += g.dur;
   }
-  // the hero: a tiny scooter between giants
-  const heroEnd = GO - 1.65;
+  // the hero: a tiny scooter between giants (the countdown starts over this shot)
+  const heroEnd = GO - 0.8;
   shots.push({ t0: gt, t1: heroEnd, kind: 'follow', racer: W, offset: [[7.5, -5.0, 2.4], [5.2, -3.4, 2.5]], look: [0, 0, 1.9], fov: 40 });
   label(gt + 0.05, racers[W].name.toUpperCase(), { style: 'tag', dur: heroEnd - gt - 0.1, color: racers[W].color });
   sfx(gt + 0.35, 'meep', 1.0);
@@ -504,7 +506,7 @@ function buildPresentation(plan) {
   sfx(GO, 'beepHigh', 1);
   sfx(GO + 0.05, 'launch', 0.9);
   label(GO, 'GO!', { style: 'count', dur: 0.8, color: '#3dff7a' });
-  shots.push({ t0: GO, t1: 9.45, kind: 'static', pos: [10, 0.6, -13.8], look: { racer: R, offset: [0, 1.8, 0], lag: 0.12 }, fov: 58, blur: 0.2 });
+  shots.push({ t0: GO, t1: CHAOS0, kind: 'static', pos: [10, 0.6, -13.8], look: { racer: R, offset: [0, 1.8, 0], lag: 0.12 }, fov: 58, blur: 0.2 });
 
   // ------------------------------------------------------------ crash shots + fillers
   const crashShots = [];
@@ -537,7 +539,7 @@ function buildPresentation(plan) {
     const kind = kinds[idx % kinds.length];
     fillers.push({ t0: a, t1: b, kind: 'filler', style: kind, racer: target });
   };
-  let cur = 9.45;
+  let cur = CHAOS0;
   blocks.forEach((bk, k) => {
     if (bk.t0 > cur + 0.05) addFiller(cur, bk.t0, k, bk.i);
     cur = Math.max(cur, bk.t1);
@@ -691,7 +693,7 @@ function buildPresentation(plan) {
   };
   plan.sceneMarks = [
     ['1 · Start', 0],
-    ['2 · Kaos', 9.45],
+    ['2 · Kaos', CHAOS0],
     ['3 · Sidste fem', F0],
     ['4 · Finale', D - 0.95],
     ...(S ? [['5 · Hacket', T.hack - 0.3], ['6 · Overhaling', T.launch - 0.3], ['7 · Han stopper ikke', C - 0.3]] : [['5 · Målstregen', C - 3], ['6 · Afslutning', C + 1]]),
